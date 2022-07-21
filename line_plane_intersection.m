@@ -93,7 +93,6 @@ function [I,rc] = line_plane_intersection(u, N, n, M, verbose)
 % N = [0.5 0.5 0];
 % [I,rc] = line_plane_intersection(u, N, n, M) % line belongs to the plane, rc = 2 expected
 
-
 %% Input parsing
 assert(nargin > 3,'Not enough input arguments.');
 assert(nargin < 6,'Too many input arguments.');
@@ -110,6 +109,24 @@ assert(isequal(ndims(u),ndims(N),ndims(n),ndims(M)),'Inputs u, M, n, and M must 
 
 %% Body
 % Plane offset parameter
+
+n=cell2mat(n);
+M=cell2mat(M);
+u=cell2mat(u);
+N=cell2mat(N);
+
+n=times(n,1);
+M=times(M,1);
+u=times(u,1);
+N=times(N,1);
+
+
+n=gpuArray(n);
+M=gpuArray(M);
+u=gpuArray(u);
+N=gpuArray(N);
+
+
 d = -dot(n,M);
 
 
@@ -129,15 +146,15 @@ if ~dot(n,u) % n & u perpendicular vectors
         rc = 0;
     end
 else
-    
+
     % Parametric line parameter t
     t = - (d + dot(n,N)) / dot(n,u);
-    
+
     % Intersection coordinates
     I = N + u*t;
-    
+    I=gather(I);
     rc = 1;
-    
+
 end
 
 
